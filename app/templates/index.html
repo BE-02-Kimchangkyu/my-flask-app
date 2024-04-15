@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>참여자 정보 입력</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* 화면 전체 높이로 설정하여 중앙 정렬 */
+        margin: 0;
+      }
+      h2 {
+        color: #333;
+        margin-top: -450px; /* h2를 상단으로 이동 */
+        margin-right: -350px;
+      }
+      form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%; /* 폼 너비를 최대 너비로 설정하여 중앙 정렬 */
+        margin-top: 20px; /* 폼을 조금 아래로 이동 */
+        margin-bottom: 20px; /* 폼을 조금 위로 이동 */
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+      input, select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button[type="submit"] {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button[type="submit"]:hover {
+        background-color: #0056b3;
+      }
+    </style>
+
+  </head>
+  <body>
+    <h2>건강설문조사 참여자 정보 입력</h2>
+    <form id="participantForm">
+      <div>
+        <label for="name">이름:</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+      <div>
+        <label for="age">나이:</label>
+        <input type="number" id="age" name="age" required />
+      </div>
+      <div>
+        <label for="gender">성별:</label>
+        <select id="gender" name="gender" required>
+          <option value="male">남성</option>
+          <option value="female">여성</option>
+          <option value="other">기타</option>
+        </select>
+      </div>
+      <button type="submit">퀴즈 시작하기</button>
+    </form>
+
+    <script>
+      document.getElementById("participantForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch("/participants", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => {
+            if (!response.ok) throw new Error("Network response was not ok.");
+            return response.json(); // 서버 응답을 JSON으로 파싱
+          })
+          .then((data) => {
+            // 참여자 ID를 쿠키에 저장
+            document.cookie = "participant_id=" + data.participant_id + ";max-age=" + (60 * 60 * 24).toString() + ";path=/";
+
+            // 서버에서 받은 리다이렉션 URL로 페이지 이동
+            if (data.redirect) {
+              window.location.href = data.redirect;
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      });
+    </script>
+  </body>
+</html>
